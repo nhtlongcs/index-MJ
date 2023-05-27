@@ -5,15 +5,16 @@ from tqdm import tqdm
 from random import randint
 from descriptor import describe_image_async as describe_image_fn
 
-MAX_TIMEOUT=20
-MAX_IMGS=100
+MAX_TIMEOUT=60
+MAX_IMGS=10000000000
 
 async def get_description(image_path):
-    # sleep for random second to simulate a blocking operation
-    delay = randint(1, 3)
-    await asyncio.sleep(delay)
     description = None
-    description = await asyncio.wait_for(describe_image_fn(image_path), timeout=MAX_TIMEOUT)
+    description = await describe_image_fn(image_path)
+    # description = await asyncio.wait_for(describe_image_fn(image_path), timeout=MAX_TIMEOUT)
+    delay = randint(0, 1)
+    # sleep for random second to simulate a blocking operation
+    await asyncio.sleep(delay)
     return description
 
 
@@ -79,17 +80,13 @@ async def indexlsc(paths_file, lsc_dir, resume_line_idx=0):
                 save_descriptions_path.mkdir(exist_ok=True, parents=True)
                 save_descriptions_file_path = save_descriptions_path / (path.stem + ".txt")
                 assert not save_descriptions_file_path.exists(), "Description file already exists"
-                if path.is_dir():
-                    for file in path.iterdir():
-                        await index(file)
-                else:
-                    descriptions = await get_description(path)
-                    assert descriptions is None, "Description is None, maybe timeout"
-                    with open(save_descriptions_file_path, "w") as f:
-                        f.write(descriptions)
-                    with open(log_path, "a") as f:
-                        f.write(image_id + "\t" +"Success\t" + str(path) + "\t" + str(save_descriptions_file_path) + "\n")
-                    break                    
+
+                descriptions = await get_description(path)
+                assert not (descriptions is None), "Description is None, maybe timeout"
+                with open(save_descriptions_file_path, "w") as f:
+                    f.write(descriptions)
+                with open(log_path, "a") as f:
+                    f.write(image_id + "\t" +"Success\t" + str(path) + "\t" + str(save_descriptions_file_path) + "\n")
             except Exception as e:
                 with open(errors_path, "a") as f:
                     f.write(image_id + "\t" + str(e) + "\t" + str(path) + "\n")
