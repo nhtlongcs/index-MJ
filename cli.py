@@ -24,28 +24,30 @@ CHANNEL_IDS = {
     "202005": None,
     "202006": None,
 }
-PORT = "8080"
-PROXY_URL = f"http://localhost:{PORT}/mj"
-
 from argparse import ArgumentParser
 import subprocess
 import os 
 import time
 
 def run_process(cmd, env_vars):
+    print("=====================================")
     process = subprocess.Popen(cmd, env=env_vars)
     process.wait()
-    print("=====================================")
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--command", type=str, required=True)
     parser.add_argument("--channel", type=str, default="test")
+    parser.add_argument("--docker", type=str, default="midjourney-proxy", help="Docker container name")
+    parser.add_argument("--port", type=str, default="8080", help="Port number")
     args = parser.parse_args()
 
     CHANNEL_ID = CHANNEL_IDS[args.channel]
 
     assert CHANNEL_ID is not None, "Channel ID is not set"
+
+    PORT = args.port
+    PROXY_URL = f"http://localhost:{PORT}/mj"
 
     env_vars = {
         "USER_TOKEN": USER_TOKEN,
@@ -54,6 +56,7 @@ if __name__ == "__main__":
         "CHANNEL_ID": CHANNEL_ID,
         "PROXY_URL": PROXY_URL,
         "PORT": PORT,
+        "DOCKER_NAME": args.docker,
     }
     env_vars.update(os.environ)
 
@@ -61,9 +64,11 @@ if __name__ == "__main__":
     start_docker_cmd = ["sh", "start_docker.sh"]
     stop_docker_cmd = ["sh", "stop_docker.sh"]
     
-    run_process(stop_docker_cmd, env_vars)
-    run_process(start_docker_cmd, env_vars)
-    run_process(command, env_vars)
+    try:
+        run_process(start_docker_cmd, env_vars)
+        run_process(command, env_vars)
+    except KeyboardInterrupt:
+        pass
     run_process(stop_docker_cmd, env_vars)
 
 
