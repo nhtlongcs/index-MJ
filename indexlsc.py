@@ -6,13 +6,13 @@ from random import randint
 from descriptor import describe_image_async as describe_image_fn
 tqdm.pandas()
 
-MAX_TIMEOUT=60
+MAX_TIMEOUT=30
 MAX_IMGS=10000000000
 
 async def get_description(image_path):
     description = None
-    description = await describe_image_fn(image_path)
-    # description = await asyncio.wait_for(describe_image_fn(image_path), timeout=MAX_TIMEOUT)
+    # description = await describe_image_fn(image_path)
+    description = await asyncio.wait_for(describe_image_fn(image_path), timeout=MAX_TIMEOUT)
     delay = randint(0, 1)
     # sleep for random second to simulate a blocking operation
     await asyncio.sleep(delay)
