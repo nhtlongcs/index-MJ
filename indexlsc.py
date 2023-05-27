@@ -4,6 +4,7 @@ import asyncio
 from tqdm import tqdm
 from random import randint
 from descriptor import describe_image_async as describe_image_fn
+tqdm.pandas()
 
 MAX_TIMEOUT=60
 MAX_IMGS=10000000000
@@ -47,10 +48,9 @@ def resolve(lsc_root: Path, lsc_filename: str) -> Path:
     return lsc_dir / lsc_filename
 
 def filter(filename):
-    year = filename[:4]
-    if int(year) <= 2019:
-        return False
-    return True
+    if filename.startswith("202002"):
+        return True
+    return False
 
 log_folder = Path("logs")
 log_folder.mkdir(exist_ok=True, parents=True)
@@ -59,10 +59,26 @@ log_path = Path("logs/log.txt")
 errors_path = Path("logs/errors.txt")
 resume_path = Path("logs/resume.txt")
 
+def compress(filenames):
+    print("compressing")
+    import pandas as pd 
+    df = pd.DataFrame({
+        "filename": filenames,
+        "day": [filename[:8] for filename in filenames]
+    })
+    df = df.sort_values(by="filename")
+    # each day only keep 24 files, evenly distributed
+    df = df.groupby("day").progress_apply(lambda x: x.iloc[::max(len(x) // 24, 1)]).reset_index(drop=True)
+    print("Done")
+    return df["filename"].tolist()
+
+    
+    
 async def indexlsc(paths_file, lsc_dir, resume_line_idx=0):
     global save_path
     with open(paths_file, "r") as f:
         filenames = f.readlines()
+        filenames = compress(filenames)
         filenames = filenames[resume_line_idx:]
         filenames = filenames[:MAX_IMGS]
         for idx, filename in tqdm(enumerate(filenames), total=len(filenames)):
