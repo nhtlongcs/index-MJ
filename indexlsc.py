@@ -3,14 +3,17 @@ from pathlib import Path
 import asyncio
 from tqdm import tqdm
 from random import randint
-from descriptor import describe_image_fn
+from descriptor import describe_image_async as describe_image_fn
+
+MAX_TIMEOUT=20
+MAX_IMGS=100
 
 async def get_description(image_path):
     # sleep for random second to simulate a blocking operation
     delay = randint(1, 3)
     await asyncio.sleep(delay)
-    async with asyncio.timeout(10):
-        description = await describe_image_fn(image_path)
+    description = None
+    description = await asyncio.wait_for(describe_image_fn(image_path), timeout=MAX_TIMEOUT)
     return description
 
 
@@ -60,9 +63,10 @@ async def indexlsc(paths_file, lsc_dir, resume_line_idx=0):
     with open(paths_file, "r") as f:
         filenames = f.readlines()
         filenames = filenames[resume_line_idx:]
-        for idx, filename in tqdm(enumerate(filenames), total=len(filenames)-resume_line_idx):
+        filenames = filenames[:MAX_IMGS]
+        for idx, filename in tqdm(enumerate(filenames), total=len(filenames)):
             with open(resume_path, "w") as f:
-                f.write(str(idx))
+                f.write(str(resume_line_idx + idx))
             filename = filename.strip()
             if not filter(filename):
                 continue
@@ -80,14 +84,15 @@ async def indexlsc(paths_file, lsc_dir, resume_line_idx=0):
                         await index(file)
                 else:
                     descriptions = await get_description(path)
+                    assert descriptions is None, "Description is None, maybe timeout"
                     with open(save_descriptions_file_path, "w") as f:
                         f.write(descriptions)
                     with open(log_path, "a") as f:
                         f.write(image_id + "\t" +"Success\t" + str(path) + "\t" + str(save_descriptions_file_path) + "\n")
+                    break                    
             except Exception as e:
                 with open(errors_path, "a") as f:
                     f.write(image_id + "\t" + str(e) + "\t" + str(path) + "\n")
-            
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--lsc-path", type=str, required=True, help="Path to file or directory")
@@ -100,4 +105,5 @@ if __name__ == "__main__":
         assert resume_path.exists(), "Resume path does not exist"
         with open(resume_path, "r") as f:
             resume_line_idx = int(f.read())
+
     asyncio.run(indexlsc(args.txt, args.lsc_path, resume_line_idx))
