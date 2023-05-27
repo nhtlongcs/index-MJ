@@ -9,7 +9,7 @@ from config import USER_TOKEN, BOT_TOKEN, SERVER_ID, CHANNEL_ID, PROXY_URL
 
 MESSAGE_LIMIT = 5
 
-def describe_image(img_path: str) -> str:
+def describe_image(img_path: str, image_id:str = None) -> str:
     """
     Function to describe an image given image path
     Args:
@@ -53,7 +53,6 @@ def retrieve_messages():
         f'https://discord.com/api/v10/channels/{CHANNEL_ID}/messages?limit={MESSAGE_LIMIT}', headers=headers)
     jsonn = json.loads(r.text)
     return jsonn
-
 
 def collecting_results():
     """
@@ -102,7 +101,7 @@ async def describe_image_async(img_path: str) -> str:
     """
     task_id = describe_image(img_path)
     assert task_id is not None, "task_id is returned None"
-    print(f"task_id: {task_id}")
+    # print(f"task_id: {task_id}")
     delay = 1
     while True:
         await asyncio.sleep(delay)
