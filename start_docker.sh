@@ -4,16 +4,17 @@ echo "SERVER_ID=${SERVER_ID}"
 echo "CHANNEL_ID=${CHANNEL_ID}"
 echo "USER_TOKEN=${USER_TOKEN}"
 echo "BOT_TOKEN=${BOT_TOKEN}"
-
+echo "DOCKER_NAME=${DOCKER_NAME}"
+echo "PORT=${PORT}"
 
 docker run -d \
- -p 8080:8080 \
+ -p ${PORT}:8080 \
  -e mj.discord.guild-id=${SERVER_ID} \
  -e mj.discord.channel-id=${CHANNEL_ID} \
  -e mj.discord.user-token=${USER_TOKEN} \
  -e mj.discord.bot-token=${BOT_TOKEN} \
  --restart=always \
- --name midjourney-proxy \
+ --name ${DOCKER_NAME} \
  novicezk/midjourney-proxy:1.5.1
 
 
