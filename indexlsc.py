@@ -68,7 +68,9 @@ def compress(filenames):
     })
     df = df.sort_values(by="filename")
     # each day only keep 24 files, evenly distributed
-    df = df.groupby("day").progress_apply(lambda x: x.iloc[::max(len(x) // 24, 1)]).reset_index(drop=True)
+    df = df.groupby("day").progress_apply(lambda x: x.iloc[::max(len(x) // 48, 1)]).reset_index(drop=True)
+    # filter
+    df = df[df["filename"].progress_apply(filter)]
     print("Done")
     return df["filename"].tolist()
 
@@ -85,8 +87,6 @@ async def indexlsc(paths_file, lsc_dir, resume_line_idx=0):
             with open(resume_path, "w") as f:
                 f.write(str(resume_line_idx + idx))
             filename = filename.strip()
-            if not filter(filename):
-                continue
             path = resolve(Path(lsc_dir), filename)
             image_id = path.stem
             try:
