@@ -46,6 +46,17 @@ def get_task_status(task_id: str) -> requests.Response:
     return requests.get(f"{PROXY_URL}/task/{task_id}/fetch")
 
 
+def send_message(bot_token, channel_id, message):
+    url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
+    headers = {
+        "Authorization": f"Bot {bot_token}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "content": message
+    }
+    response = requests.post(url, headers=headers, json=data)
+    return response.status_code == 200
 
 def retrieve_messages():
     headers = {'authorization' : USER_TOKEN}
@@ -61,6 +72,9 @@ def collecting_results():
     results = []
     message_list = retrieve_messages()
     for message in message_list:
+        # content about image path that the mj-proxy send
+        if message['author']['username'] == 'mj-proxy':
+            print(message['content'])
         if not message.get('interaction'):
             continue
         if message['author']['username'] == 'Midjourney Bot'  and message['interaction']['name'] == 'describe':
@@ -99,6 +113,7 @@ async def describe_image_async(img_path: str) -> str:
     Returns:
         str: id of the describe task
     """
+    send_message(BOT_TOKEN, CHANNEL_ID, img_path)
     task_id = describe_image(img_path)
     assert task_id is not None, "task_id is returned None"
     # print(f"task_id: {task_id}")
@@ -117,7 +132,6 @@ async def describe_image_async(img_path: str) -> str:
         plain_text = image_url + '\n' + description
         # assert check_image_hash(img_path, image_url), "image is not the same"
         return plain_text
-        
     
 if __name__ == "__main__":
-    asyncio.run(describe_image_async('test3.jpg'))
+    asyncio.run(describe_image_async('test2.jpg'))
