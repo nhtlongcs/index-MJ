@@ -110,7 +110,7 @@ def check_image_hash(image1_path, image2_path):
     image2 = get_image(image2_path)
     return hash(image1) == hash(image2)
 
-async def describe_image_async(img_path: str) -> str:
+async def describe_image_async(img_path: str, verbose=False) -> str:
     """
     Function to describe an image given image path
     Args:
@@ -127,6 +127,8 @@ async def describe_image_async(img_path: str) -> str:
     while True:
         await asyncio.sleep(delay)
         response = get_task_status(task_id).json()
+        if verbose:
+            print(response['status'])
         if response['status'] == TaskStatus.SUCCESS:
             image_url = response['imageUrl']
             description = response['prompt']
@@ -140,5 +142,14 @@ async def describe_image_async(img_path: str) -> str:
 
     return plain_text
 
+async def test():
+    MAX_TIMEOUT = 10
+    description = None
+    try:
+        description = await asyncio.wait_for(describe_image_async('test.jpg'), timeout=MAX_TIMEOUT)
+        assert description is not None, "description is returned None"
+    except asyncio.exceptions.TimeoutError:
+        print("Timeout")
+
 if __name__ == "__main__":
-    asyncio.run(describe_image_async('test.jpg'))
+    asyncio.run(test())
