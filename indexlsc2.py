@@ -18,38 +18,12 @@ async def get_description(image_path):
         description = await asyncio.wait_for(describe_image_fn(image_path), timeout=MAX_TIMEOUT)
     except asyncio.exceptions.TimeoutError:
         assert False, "TimeoutError, account maybe temporarily blocked due to suspicious activity, please try again later"
-    # sleep for random second to simulate a blocking operation
     await asyncio.sleep(delay)
     return description
 
 
 save_path = Path("descriptions")
 save_path.mkdir(exist_ok=True, parents=True)
-
-async def index(path):
-    path = Path(path)
-    if path.is_dir():
-        for file in path.iterdir():
-            await index(file)
-    else:
-        descriptions = await get_description(path)
-        global save_path
-
-        with open(save_path / (path.stem + ".txt"), "w") as f:
-            f.write(descriptions)
-
-
-def resolve(lsc_root: Path, lsc_filename: str) -> Path:
-    year = lsc_filename[:4]
-    if year == "2000":
-        year = "2019"
-        # print(lsc_filename)
-        lsc_filename = "2019" + lsc_filename[4:]
-    month = lsc_filename[4:6]
-    day = lsc_filename[6:8]
-    lsc_filename = lsc_filename + ".jpg"
-    lsc_dir = lsc_root / f'{year}{month}' / day
-    return lsc_dir / lsc_filename
 
 def filter(filename):
     if filename.startswith("202001"):
@@ -64,19 +38,7 @@ errors_path = Path("logs/errors.txt")
 resume_path = Path("logs/resume.txt")
 
 def compress(filenames):
-    print("compressing")
-    import pandas as pd 
-    df = pd.DataFrame({
-        "filename": filenames,
-        "day": [filename[:8] for filename in filenames]
-    })
-    df = df.sort_values(by="filename")
-    # each day only keep 24 files, evenly distributed
-    # df = df.groupby("day").progress_apply(lambda x: x.iloc[::max(len(x) // 48, 1)]).reset_index(drop=True)
-    # filter
-    df = df[df["filename"].progress_apply(filter)]
-    print("Done")
-    return df["filename"].tolist()
+    pass # removed for brevity
 
 async def indexlsc2(csv_paths_file, resume_line_idx=0):
     global save_path
