@@ -109,7 +109,6 @@ async def indexlsc2(csv_paths_file, resume_line_idx=0):
                     
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--lsc-path", type=str, required=True, help="Path to file or directory")
     parser.add_argument("--csv", type=str, required=True, help="Path to image list file")
     parser.add_argument("--resume", type=str, default=None, help="Path to resume file")
     args = parser.parse_args()
