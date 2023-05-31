@@ -18,8 +18,8 @@ CHANNEL_IDS = {
     "201910": None,
     "201911": None,
     "201912": None,
-    "202001": "1112092424060289024",
-    "202002": "1110427400220721212",
+    "202001": "1113328767318900798",
+    "202002": "1113328859635523584",
     "202003": None,
     "202004": None,
     "202005": None,
@@ -67,10 +67,10 @@ if __name__ == "__main__":
     
     try:
         run_process(start_docker_cmd, env_vars)
-        run_process(command, env_vars)
+        # run_process(command, env_vars)
     except KeyboardInterrupt:
         pass
-    run_process(stop_docker_cmd, env_vars)
+    # run_process(stop_docker_cmd, env_vars)
 
 
     
