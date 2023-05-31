@@ -1,6 +1,6 @@
 # 1110427330981146627/1110477862303186976
 USER_TOKEN = "NDQ2NzEzMDYyNjA3NTUyNTEy.GnP6vN.aVuYNvBc0zFeovNl_ScSzDkZ7W8bDoU00_OVz8"
-BOT_TOKEN = "MTEwODM0MjM5ODI4MDU1MjQ4OA.G7J-TW.YNv1rF4YMZwbA0bIZkim5Y2P6JwQ8p7R-5TUeE"
+BOT_TOKEN = "MTEwODM0MjM5ODI4MDU1MjQ4OA.Glt6jr.Smxvx25DVIkN5QbMr1DCveq5PlWKSg1Bkgp21s"
 SERVER_ID = "1110427330981146627"
 
 CHANNEL_IDS = {
@@ -67,10 +67,10 @@ if __name__ == "__main__":
     
     try:
         run_process(start_docker_cmd, env_vars)
-        # run_process(command, env_vars)
+        run_process(command, env_vars)
     except KeyboardInterrupt:
         pass
-    # run_process(stop_docker_cmd, env_vars)
+    run_process(stop_docker_cmd, env_vars)
 
 
     
