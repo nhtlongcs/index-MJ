@@ -9,6 +9,12 @@ from config import USER_TOKEN, BOT_TOKEN, SERVER_ID, CHANNEL_ID, PROXY_URL
 
 MESSAGE_LIMIT = 5
 
+class TaskStatus:
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+    NOTSTARTED = "NOT_START"
+
 def describe_image(img_path: str, image_id:str = None) -> str:
     """
     Function to describe an image given image path
@@ -30,7 +36,6 @@ def describe_image(img_path: str, image_id:str = None) -> str:
     payload = {
         "base64": f"data:image/png;base64,{base64_data}"
     }
-
     return requests.post(f"{PROXY_URL}/trigger/describe", json=payload, headers=headers).json()["result"]
 
 
@@ -116,22 +121,23 @@ async def describe_image_async(img_path: str) -> str:
     send_message(BOT_TOKEN, CHANNEL_ID, img_path)
     task_id = describe_image(img_path)
     assert task_id is not None, "task_id is returned None"
-    # print(f"task_id: {task_id}")
     delay = 1
+    plain_text = None
     while True:
         await asyncio.sleep(delay)
         response = get_task_status(task_id).json()
-        try: 
-            msgs = collecting_results()
-            msg = msgs[0]
-            image_url = msg[0]
-            description = msg[1]
-        except Exception as e:
-            await asyncio.sleep(1)
+        if response['status'] == TaskStatus.SUCCESS:
+            image_url = response['imageUrl']
+            description = response['description']
+            plain_text = image_url + '\n' + description
+            break
+        elif response['status'] == TaskStatus.NOTSTARTED:
             continue
-        plain_text = image_url + '\n' + description
-        # assert check_image_hash(img_path, image_url), "image is not the same"
-        return plain_text
-    
+        else:
+            # FAILURE
+            assert False, f"Undefined status, please check the proxy server: {response['status']}"
+
+    return plain_text
+
 if __name__ == "__main__":
-    asyncio.run(describe_image_async('test2.jpg'))
+    asyncio.run(describe_image_async('test.jpg'))
