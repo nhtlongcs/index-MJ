@@ -52,6 +52,7 @@ def get_task_status(task_id: str) -> requests.Response:
 
 
 def send_message(bot_token, channel_id, message):
+    message = str(message)
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
     headers = {
         "Authorization": f"Bot {bot_token}",
