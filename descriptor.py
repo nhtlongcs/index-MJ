@@ -129,7 +129,7 @@ async def describe_image_async(img_path: str) -> str:
         response = get_task_status(task_id).json()
         if response['status'] == TaskStatus.SUCCESS:
             image_url = response['imageUrl']
-            description = response['description']
+            description = response['prompt']
             plain_text = image_url + '\n' + description
             break
         elif response['status'] == TaskStatus.NOTSTARTED:
